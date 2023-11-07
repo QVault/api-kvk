@@ -1,6 +1,3 @@
-import { BedrijfRegisterResponse, Dossier, VestigingAdres } from '../models/typesBedrijfRegisterAPI';
-import { HandelRegisterResponse, Bestuurder } from '../models/typesHandelRegisterAPI';
-
 export interface BusinessRegistryResponse {
 	totalRowCount: number;
 	businesses: Business[];
@@ -42,9 +39,31 @@ export interface MainBranchInfo {
 	description: string; // split from hoofdbranch
 }
 
-export interface BusinessAddress extends VestigingAdres {}
+export interface BusinessAddress {
+	streetName?: string | null; // translated from 'straatnaam'
+	countryId: number; // 'landId'
+	countryName: string; // 'landnaam'
+	cityName?: string | null; // translated from 'plaatsnaam'
+	number?: string | null; // 'nummer'
+	houseNumber?: number | null;
+	addition?: string | null; // translated from 'toevoeging'
+	gacCode: number; // 'gacCode'
+	gacStreetName: string; // 'gacStraatnaam'
+	zone: string; // 'zone'
+	region: string; // 'regio'
+	postalCode?: string | null; // translated from 'postcode'
+}
 
-export interface Manager extends Bestuurder {}
+export interface Manager {
+	name: string;
+	dossierNumber?: number | null;
+	title?: string | null;
+	role: string;
+	birthCountry: string;
+	birthPlace: string;
+	startDate: Date;
+	authority: string;
+}
 
 export interface CapitalInfo {
 	invested: number;

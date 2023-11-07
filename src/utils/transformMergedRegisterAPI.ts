@@ -3,9 +3,36 @@ import { HandelRegisterResponse } from '../models/typesHandelRegisterAPI';
 import { Business } from '../models/newTypes';
 
 function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntry: HandelRegisterResponse): Business {
-	// Extract necessary info from the old structure
 	const [code, branch] = bedrijfRegisterEntry.dossiernummerString.split('.');
-	const [branchCode, branchDescription] = bedrijfRegisterEntry.hoofdbranch.split(' - ');
+	const [branchCode, branchDescription] = handelRegisterEntry.hoofdbranch.split(' - ');
+
+	const transformedManagers = handelRegisterEntry.bestuur.map((manager) => {
+		return {
+			name: manager.naam,
+			dossierNumber: manager.dossiernummer,
+			title: manager.titel,
+			role: manager.functie,
+			birthCountry: manager.geboorteland,
+			birthPlace: manager.geboorteplaats,
+			startDate: manager.ingangsDatum,
+			authority: manager.bevoegdheid,
+		};
+	});
+
+	const transformedAddress = {
+		streetName: bedrijfRegisterEntry.vestigingAdres.straatnaam ?? null,
+		countryId: bedrijfRegisterEntry.vestigingAdres.landId,
+		countryName: bedrijfRegisterEntry.vestigingAdres.landnaam,
+		cityName: bedrijfRegisterEntry.vestigingAdres.plaatsnaam ?? null,
+		number: bedrijfRegisterEntry.vestigingAdres.nummer ? String(bedrijfRegisterEntry.vestigingAdres.nummer) : null,
+		houseNumber: bedrijfRegisterEntry.vestigingAdres.huisnummer != null ? bedrijfRegisterEntry.vestigingAdres.huisnummer : null,
+		addition: bedrijfRegisterEntry.vestigingAdres.toevoeging ?? null,
+		gacCode: bedrijfRegisterEntry.vestigingAdres.gacCode,
+		gacStreetName: bedrijfRegisterEntry.vestigingAdres.gacStraatnaam,
+		zone: bedrijfRegisterEntry.vestigingAdres.zone,
+		region: bedrijfRegisterEntry.vestigingAdres.regio,
+		postalCode: bedrijfRegisterEntry.vestigingAdres.postcode ?? null,
+	};
 
 	return {
 		dossier: {
@@ -23,8 +50,8 @@ function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntr
 		},
 		legalForm: bedrijfRegisterEntry.rechtsvorm,
 		isActive: bedrijfRegisterEntry.isActief,
-		address: bedrijfRegisterEntry.vestigingAdres,
-		management: handelRegisterEntry.bestuur,
+		address: transformedAddress,
+		management: transformedManagers,
 		capital: {
 			invested: handelRegisterEntry.kapitaalGestort,
 			currencyId: handelRegisterEntry.kapitaalValutaId,
