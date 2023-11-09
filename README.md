@@ -1,9 +1,22 @@
 # Documentation for Business and Trade Register API
 
-This API is designed to interact with a business and trade registration system, providing functionalities to search for businesses and retrieve detailed registration information. The following outlines the key components, endpoints, and functionalities of the API.
+This API is designed to interact with a business and trade registration system for the API of Arubas KVK Registry, providing functionalities to search for businesses and retrieve detailed registration information. The following outlines the key components, endpoints, and functionalities of the API. All it really does it take two api endpoints and merges them into one. KVK has announced that they are putting the api behind a paywall, I dont know if that also means the API will change. Anyways this is my attempt at a wrapper that provides the data is a cleaner format, still some redundancy, but works for me. AI Generated Documentation.
+
+API Workflow/Pipeline
+
+1. Perform a search with a given `searchTerm` and other optional parameters to filter the results.
+2. The API will return a list of `Dossier` objects based on the search criteria.
+3. For each `Dossier`, the API will then fetch detailed information from the trade register.
+4. The `transformBusinessData` utility will merge the detailed trade register data with the business register data into a comprehensive `Business` object.
+5. The API returns the transformed `Business` objects in the response.
+
+## Responses
+
+Responses are returned as JSON objects, with `Content-Type: application/json`. Each `Business` object in the response contains combined information from both the business register and the trade register, providing a full picture of each business's registration details.
+
+This documentation provides an overview of the API's capabilities, data models, endpoints, utility functions, and general usage pattern. It is intended to help developers understand how to integrate with and utilize the API in their applications.# api-kvk
 
 ## Models
-
 ### Dossier
 A `Dossier` object represents a business registration dossier, which contains:
 
@@ -53,19 +66,3 @@ Accepts an array of `Dossier` objects and returns detailed information for each 
 
 ### fetch
 Handles an incoming request to the API, parsing query parameters to conduct a search, and then fetches detailed information for each result using `fetchDetailsForBusinesses`. The merged results are returned as a JSON response.
-
-## Usage Example
-
-To use this API, you would typically:
-
-1. Perform a search with a given `searchTerm` and other optional parameters to filter the results.
-2. The API will return a list of `Dossier` objects based on the search criteria.
-3. For each `Dossier`, the API will then fetch detailed information from the trade register.
-4. The `transformBusinessData` utility will merge the detailed trade register data with the business register data into a comprehensive `Business` object.
-5. The API returns the transformed `Business` objects in the response.
-
-## Responses
-
-Responses are returned as JSON objects, with `Content-Type: application/json`. Each `Business` object in the response contains combined information from both the business register and the trade register, providing a full picture of each business's registration details.
-
-This documentation provides an overview of the API's capabilities, data models, endpoints, utility functions, and general usage pattern. It is intended to help developers understand how to integrate with and utilize the API in their applications.# api-kvk
