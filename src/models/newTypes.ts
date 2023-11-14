@@ -22,7 +22,7 @@ export interface Business {
 
 export interface DossierInfo {
 	code: string; // split from dossiernummerString
-	branch: string; // split from dossiernummerString
+	//branch?: string; // split from dossiernummerString
 	type: string;
 	registrationNumber: number; // "registratienummer"
 	branchNumber: number; // "filiaalNummer"

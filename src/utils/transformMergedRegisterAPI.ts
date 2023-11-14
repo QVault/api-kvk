@@ -36,7 +36,6 @@ function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntr
 
 	let transformedSubBranches: any = [];
 
-	// Check if subbranches are present and not empty
 	if (handelRegisterEntry.subbranches && handelRegisterEntry.subbranches.length > 0) {
 		transformedSubBranches = handelRegisterEntry.subbranches.map((subBranchEntry) => {
 			const [subBranchCode, subBranchDescription] = subBranchEntry.split(' - ');
@@ -50,7 +49,7 @@ function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntr
 	return {
 		dossier: {
 			code: code,
-			branch: branch,
+			// branch: branch,
 			type: bedrijfRegisterEntry.dossiernummer.bedrijfstype.name,
 			registrationNumber: bedrijfRegisterEntry.dossiernummer.registratienummer,
 			branchNumber: bedrijfRegisterEntry.dossiernummer.filiaalnummer,
