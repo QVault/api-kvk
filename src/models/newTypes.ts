@@ -8,6 +8,7 @@ export interface Business {
 	name: string;
 	alternateName?: string; // previously "handelsnaam"
 	mainBranch: MainBranchInfo;
+	subBranch: SubBranchInfo;
 	legalForm: string; // previously "rechtsvorm"
 	isActive: boolean; // previously "isActief"
 	address: BusinessAddress;
@@ -22,7 +23,7 @@ export interface Business {
 export interface DossierInfo {
 	code: string; // split from dossiernummerString
 	branch: string; // split from dossiernummerString
-	type: BusinessType;
+	type: string;
 	registrationNumber: number; // "registratienummer"
 	branchNumber: number; // "filiaalNummer"
 }
@@ -37,6 +38,11 @@ export interface BusinessType {
 export interface MainBranchInfo {
 	code: string; // split from hoofdbranch
 	description: string; // split from hoofdbranch
+}
+
+export interface SubBranchInfo {
+	code: string | null;
+	description: string | null;
 }
 
 export interface BusinessAddress {

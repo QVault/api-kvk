@@ -6,7 +6,7 @@ function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntr
 	const [code, branch] = bedrijfRegisterEntry.dossiernummerString.split('.');
 	const [branchCode, branchDescription] = handelRegisterEntry.hoofdbranch.split(' - ');
 
-	const transformedManagers = handelRegisterEntry.bestuur.map((manager) => {
+	const transformedManagers: any = handelRegisterEntry.bestuur.map((manager) => {
 		return {
 			name: manager.naam,
 			dossierNumber: manager.dossiernummer,
@@ -19,7 +19,7 @@ function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntr
 		};
 	});
 
-	const transformedAddress = {
+	const transformedAddress: any = {
 		streetName: bedrijfRegisterEntry.vestigingAdres.straatnaam ?? null,
 		countryId: bedrijfRegisterEntry.vestigingAdres.landId,
 		countryName: bedrijfRegisterEntry.vestigingAdres.landnaam,
@@ -31,14 +31,27 @@ function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntr
 		gacStreetName: bedrijfRegisterEntry.vestigingAdres.gacStraatnaam,
 		zone: bedrijfRegisterEntry.vestigingAdres.zone,
 		region: bedrijfRegisterEntry.vestigingAdres.regio,
-		postalCode: bedrijfRegisterEntry.vestigingAdres.postcode ?? null,
+		// postalCode: bedrijfRegisterEntry.vestigingAdres.postcode ?? null,
 	};
+
+	let transformedSubBranches: any = [];
+
+	// Check if subbranches are present and not empty
+	if (handelRegisterEntry.subbranches && handelRegisterEntry.subbranches.length > 0) {
+		transformedSubBranches = handelRegisterEntry.subbranches.map((subBranchEntry) => {
+			const [subBranchCode, subBranchDescription] = subBranchEntry.split(' - ');
+			return {
+				code: subBranchCode,
+				description: subBranchDescription,
+			};
+		});
+	}
 
 	return {
 		dossier: {
 			code: code,
 			branch: branch,
-			type: bedrijfRegisterEntry.dossiernummer.bedrijfstype,
+			type: bedrijfRegisterEntry.dossiernummer.bedrijfstype.name,
 			registrationNumber: bedrijfRegisterEntry.dossiernummer.registratienummer,
 			branchNumber: bedrijfRegisterEntry.dossiernummer.filiaalnummer,
 		},
@@ -48,6 +61,7 @@ function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntr
 			code: branchCode,
 			description: branchDescription,
 		},
+		subBranch: transformedSubBranches,
 		legalForm: bedrijfRegisterEntry.rechtsvorm,
 		isActive: bedrijfRegisterEntry.isActief,
 		address: transformedAddress,
