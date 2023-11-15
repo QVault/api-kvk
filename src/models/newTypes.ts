@@ -7,12 +7,11 @@ export interface Business {
 	dossier: DossierInfo;
 	name: string;
 	alternateName?: string; // previously "handelsnaam"
-	mainBranch: MainBranchInfo;
-	subBranch: SubBranchInfo;
+	branches: BranchInfo[];
 	legalForm: string; // previously "rechtsvorm"
 	isActive: boolean; // previously "isActief"
 	address: BusinessAddress;
-	management: Manager[]; // previously "bestuur"
+	management: BusinessManager[]; // previously "bestuur"
 	capital: CapitalInfo;
 	objective?: string; // "doelstellingNL"
 	status: string;
@@ -35,35 +34,30 @@ export interface BusinessType {
 	name: string;
 }
 
-export interface MainBranchInfo {
-	code: string; // split from hoofdbranch
-	description: string; // split from hoofdbranch
-}
-
-export interface SubBranchInfo {
-	code: string | null;
-	description: string | null;
+export interface BranchInfo {
+	code: string;
+	description: string;
 }
 
 export interface BusinessAddress {
-	streetName?: string | null; // translated from 'straatnaam'
-	countryId: number; // 'landId'
-	countryName: string; // 'landnaam'
-	cityName?: string | null; // translated from 'plaatsnaam'
-	number?: string | null; // 'nummer'
+	streetName?: string | null;
+	countryId: number;
+	countryName: string;
+	cityName?: string | null;
+	number?: string | null;
 	houseNumber?: number | null;
-	addition?: string | null; // translated from 'toevoeging'
-	gacCode: number; // 'gacCode'
-	gacStreetName: string; // 'gacStraatnaam'
-	zone: string; // 'zone'
-	region: string; // 'regio'
-	postalCode?: string | null; // translated from 'postcode'
+	addition?: string | null;
+	gacCode: number;
+	gacStreetName: string;
+	zone: string;
+	region: string;
+	postalCode?: string | null;
 }
 
-export interface Manager {
+export interface BusinessManager {
 	name: string;
-	dossierNumber?: number | null;
-	title?: string | null;
+	dossierNumber?: string | null;
+	title: string | null;
 	role: string;
 	birthCountry: string;
 	birthPlace: string;

@@ -1,25 +1,23 @@
 import { Dossier } from '../models/typesBedrijfRegisterAPI';
 import { HandelRegisterResponse } from '../models/typesHandelRegisterAPI';
-import { Business } from '../models/newTypes';
+import { Business, BusinessManager, BusinessAddress, BranchInfo } from '../models/newTypes';
 
 function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntry: HandelRegisterResponse): Business {
-	const [code, branch] = bedrijfRegisterEntry.dossiernummerString.split('.');
+	const code = bedrijfRegisterEntry.dossiernummerString.split('.')[0];
 	const [branchCode, branchDescription] = handelRegisterEntry.hoofdbranch.split(' - ');
 
-	const transformedManagers: any = handelRegisterEntry.bestuur.map((manager) => {
-		return {
-			name: manager.naam,
-			dossierNumber: manager.dossiernummer,
-			title: manager.titel,
-			role: manager.functie,
-			birthCountry: manager.geboorteland,
-			birthPlace: manager.geboorteplaats,
-			startDate: manager.ingangsDatum,
-			authority: manager.bevoegdheid,
-		};
-	});
+	const transformedManagers: BusinessManager[] = handelRegisterEntry.bestuur.map((manager) => ({
+		name: manager.naam,
+		dossierNumber: manager.dossiernummer || null,
+		title: manager.titel || null,
+		role: manager.functie,
+		birthCountry: manager.geboorteland,
+		birthPlace: manager.geboorteplaats,
+		startDate: manager.ingangsDatum,
+		authority: manager.bevoegdheid,
+	}));
 
-	const transformedAddress: any = {
+	const transformedAddress: BusinessAddress = {
 		streetName: bedrijfRegisterEntry.vestigingAdres.straatnaam ?? null,
 		countryId: bedrijfRegisterEntry.vestigingAdres.landId,
 		countryName: bedrijfRegisterEntry.vestigingAdres.landnaam,
@@ -28,39 +26,30 @@ function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntr
 		houseNumber: bedrijfRegisterEntry.vestigingAdres.huisnummer != null ? bedrijfRegisterEntry.vestigingAdres.huisnummer : null,
 		addition: bedrijfRegisterEntry.vestigingAdres.toevoeging ?? null,
 		gacCode: bedrijfRegisterEntry.vestigingAdres.gacCode,
-		gacStreetName: bedrijfRegisterEntry.vestigingAdres.gacStraatnaam,
-		zone: bedrijfRegisterEntry.vestigingAdres.zone,
+		gacStreetName: bedrijfRegisterEntry.vestigingAdres.gacStraatnaam || '',
+		zone: bedrijfRegisterEntry.vestigingAdres.zone || '',
 		region: bedrijfRegisterEntry.vestigingAdres.regio,
 		// postalCode: bedrijfRegisterEntry.vestigingAdres.postcode ?? null,
 	};
 
-	let transformedSubBranches: any = [];
-
-	if (handelRegisterEntry.subbranches && handelRegisterEntry.subbranches.length > 0) {
-		transformedSubBranches = handelRegisterEntry.subbranches.map((subBranchEntry) => {
+	const branches: BranchInfo[] = [
+		{ code: branchCode, description: branchDescription },
+		...handelRegisterEntry.subbranches.map((subBranchEntry) => {
 			const [subBranchCode, subBranchDescription] = subBranchEntry.split(' - ');
-			return {
-				code: subBranchCode,
-				description: subBranchDescription,
-			};
-		});
-	}
+			return { code: subBranchCode, description: subBranchDescription };
+		}),
+	];
 
 	return {
 		dossier: {
 			code: code,
-			// branch: branch,
 			type: bedrijfRegisterEntry.dossiernummer.bedrijfstype.name,
 			registrationNumber: bedrijfRegisterEntry.dossiernummer.registratienummer,
 			branchNumber: bedrijfRegisterEntry.dossiernummer.filiaalnummer,
 		},
 		name: bedrijfRegisterEntry.bedrijfsnaam,
 		alternateName: bedrijfRegisterEntry.handelsnaam,
-		mainBranch: {
-			code: branchCode,
-			description: branchDescription,
-		},
-		subBranch: transformedSubBranches,
+		branches: branches,
 		legalForm: bedrijfRegisterEntry.rechtsvorm,
 		isActive: bedrijfRegisterEntry.isActief,
 		address: transformedAddress,
