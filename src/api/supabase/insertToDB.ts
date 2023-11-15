@@ -3,7 +3,7 @@ import { insertBranches } from './insertBranchData';
 import { insertBusiness } from './insertBusinessData';
 import { insertCapital } from './insertCapitalData';
 import { insertManagers } from './insertManagementData';
-
+//s
 import { Business } from '../../models/newTypes';
 import { Context } from 'hono';
 
