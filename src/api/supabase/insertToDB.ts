@@ -3,19 +3,46 @@ import { initSupabaseClient } from './supabaseClient';
 
 import { mapBusinessData, mapAddressData, mapCapitalData, mapManagerData } from '../../mappings';
 import { Business, BusinessAddress, CapitalInfo, BusinessManager } from '../../models/newTypes';
+import { updateAndLogChanges } from './insertChanges';
 
-async function insertBusiness(c: Context, business: Business) {
+async function insertOrUpdateBusiness(c: Context, business: Business) {
 	const supabase = initSupabaseClient(c);
-	const { data, error } = await supabase
-		.from('company')
-		.insert([mapBusinessData(business)])
-		.select('id');
+	const uniqueId = business.id;
 
-	if (error) {
-		console.error('Error inserting business:', error);
-		throw new Error('Error inserting business');
+	console.log('Unique ID for check:', uniqueId);
+
+	if (uniqueId === null || uniqueId === undefined) {
+		console.error('Error: external_id is null or undefined.');
+		throw new Error('Invalid external_id');
 	}
-	return data;
+
+	const { data: existingData, error: fetchError } = await supabase.from('company').select('*').eq('external_id', uniqueId).single();
+
+	console.log('Query result:', existingData);
+
+	if (fetchError && fetchError.code !== 'PGRST116') {
+		console.error('Error fetching business:', fetchError);
+		throw fetchError;
+	}
+
+	console.log(existingData);
+
+	if (existingData) {
+		console.log('Existing data found, updating record.');
+		return await updateAndLogChanges(supabase, 'company', existingData, business, mapBusinessData);
+	} else {
+		console.log('No existing data, inserting new record.');
+		const { data, error } = await supabase
+			.from('company')
+			.insert([mapBusinessData(business)])
+			.select('id');
+
+		if (error) {
+			console.error('Error inserting business:', error);
+			throw error;
+		}
+		return data;
+	}
 }
 
 async function insertCapital(c: Context, companyId: number, capital: CapitalInfo) {
@@ -100,7 +127,7 @@ async function insertManager(c: Context, companyId: number, managers: BusinessMa
 export default async function addCompleteBusinessData(c: Context, businesses: Business[]) {
 	for (const business of businesses) {
 		try {
-			const businessData = await insertBusiness(c, business);
+			const businessData = await insertOrUpdateBusiness(c, business);
 			console.log(businessData);
 			if (!businessData || !businessData.length) {
 				throw new Error('Error retrieving company ID');
