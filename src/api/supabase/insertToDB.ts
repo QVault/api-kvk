@@ -9,29 +9,24 @@ async function insertOrUpdateBusiness(c: Context, business: Business) {
 	const supabase = initSupabaseClient(c);
 	const uniqueId = business.id;
 
-	console.log('Unique ID for check:', uniqueId);
-
 	if (uniqueId === null || uniqueId === undefined) {
 		console.error('Error: external_id is null or undefined.');
 		throw new Error('Invalid external_id');
 	}
 
 	const { data: existingData, error: fetchError } = await supabase.from('company').select('*').eq('external_id', uniqueId).single();
-
-	console.log('Query result:', existingData);
-
 	if (fetchError && fetchError.code !== 'PGRST116') {
 		console.error('Error fetching business:', fetchError);
 		throw fetchError;
 	}
 
-	console.log(existingData);
-
 	if (existingData) {
-		console.log('Existing data found, updating record.');
-		return await updateAndLogChanges(supabase, 'company', existingData, business, mapBusinessData);
+		//console.log(`existing data with the external_id "${existingData.id}" found`);
+		await updateAndLogChanges(supabase, 'company', existingData, business, mapBusinessData);
+		//console.log(`id after company function passed ${updateResult.recordId}`);
+		//console.log(existingData.id);
+		return existingData.id;
 	} else {
-		console.log('No existing data, inserting new record.');
 		const { data, error } = await supabase
 			.from('company')
 			.insert([mapBusinessData(business)])
@@ -45,14 +40,36 @@ async function insertOrUpdateBusiness(c: Context, business: Business) {
 	}
 }
 
-async function insertCapital(c: Context, companyId: number, capital: CapitalInfo) {
+async function insertOrUpdateCapital(c: Context, companyId: number, capital: CapitalInfo) {
+	console.log(`Processing capital for companyId: ${companyId}`);
+
 	const supabase = initSupabaseClient(c);
-	const { data, error } = await supabase.from('capital').insert([mapCapitalData(capital, companyId)]);
-	if (error) {
-		console.error('Error inserting capital information:', error);
-		throw new Error('Error inserting capital information');
+	const { data: existingData, error: fetchError } = await supabase.from('capital').select('*').eq('company_id', companyId).single();
+	console.log(existingData);
+
+	// if (fetchError) {
+	// 	console.error('Error fetching existing capital data:', fetchError);
+	// 	throw new Error('Error fetching existing capital data');
+	// }
+
+	if (existingData) {
+		console.log(`existing data with the company_id "${existingData.company_id}" found`);
+		const updateResult = await updateAndLogChanges(supabase, 'capital', existingData, capital, mapCapitalData);
+		return { data: updateResult };
+	} else {
+		console.log('No existing capital data, inserting new record.');
+		console.log(companyId);
+		const { data, error } = await supabase
+			.from('capital')
+			.insert([mapCapitalData(capital, companyId)])
+			.single();
+
+		if (error) {
+			console.error('Error inserting capital information:', error);
+			throw new Error('Error inserting capital information');
+		}
+		return { data };
 	}
-	return data;
 }
 
 async function insertAddress(c: Context, companyId: number, address: BusinessAddress) {
@@ -127,19 +144,13 @@ async function insertManager(c: Context, companyId: number, managers: BusinessMa
 export default async function addCompleteBusinessData(c: Context, businesses: Business[]) {
 	for (const business of businesses) {
 		try {
-			const businessData = await insertOrUpdateBusiness(c, business);
-			console.log(businessData);
-			if (!businessData || !businessData.length) {
-				throw new Error('Error retrieving company ID');
-			}
+			const businessID = await insertOrUpdateBusiness(c, business);
+			await insertOrUpdateCapital(c, businessID, business.capital);
 
-			const companyId = businessData[0].id;
-			console.log('Company ID:', companyId);
+			//await insertAddress(c, companyId, business.address);
 
-			await insertAddress(c, companyId, business.address);
-			await insertCapital(c, companyId, business.capital);
-			await insertBranch(c, companyId, business.branches);
-			await insertManager(c, companyId, business.management);
+			//await insertBranch(c, companyId, business.branches);
+			//await insertManager(c, companyId, business.management);
 		} catch (error) {
 			console.error('Error processing business:', error);
 		}

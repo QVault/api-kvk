@@ -44,8 +44,10 @@ app.post('/addBusinessData', async (c) => {
 	try {
 		const getRouteResponse = await c.env.KVK_Aruba.get('kvk_aruba_data');
 		const businessData = JSON.parse(getRouteResponse);
+		console.log(`Before insertOrUpdateCapital, companyId: ${businessData.id}`);
+
 		await addCompleteBusinessData(c, businessData);
-		return c.json({ message: 'Business data added successfully' });
+		return c.json({ message: businessData });
 	} catch (error) {
 		console.error('Error adding business data:', error);
 		if (error instanceof DetailedError) {
