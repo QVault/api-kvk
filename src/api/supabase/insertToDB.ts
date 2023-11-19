@@ -53,12 +53,12 @@ async function insertOrUpdateCapital(c: Context, companyId: number, capital: Cap
 	// }
 
 	if (existingData) {
-		console.log(`existing data with the company_id "${existingData.company_id}" found`);
+		// console.log(`existing data with the company_id "${existingData.company_id}" found`);
 		const updateResult = await updateAndLogChanges(supabase, 'capital', existingData, capital, mapCapitalData);
 		return { data: updateResult };
 	} else {
-		console.log('No existing capital data, inserting new record.');
-		console.log(companyId);
+		//console.log('No existing capital data, inserting new record.');
+		//console.log(companyId);
 		const { data, error } = await supabase
 			.from('capital')
 			.insert([mapCapitalData(capital, companyId)])
@@ -87,8 +87,10 @@ async function insertOrUpdateAddress(c: Context, companyId: number, address: Bus
 		return { data: updateResult };
 	} else {
 		console.log('No existing address data, inserting new record.');
-		const dbObject = mapAddressData(companyId, address);
-		const { data, error } = await supabase.from('address').insert([dbObject]).single();
+		const { data, error } = await supabase
+			.from('address')
+			.insert([mapAddressData(companyId, address)])
+			.single();
 
 		if (error) {
 			console.error('Error inserting business address:', error);
@@ -98,22 +100,48 @@ async function insertOrUpdateAddress(c: Context, companyId: number, address: Bus
 	}
 }
 
-async function insertBranch(c: Context, companyId: number, branches: Array<{ code: string; description: string }>) {
+async function insertOrUpdateBranch(c: Context, companyId: number, branches: Array<{ code: string; description: string }>) {
 	const supabase = initSupabaseClient(c);
 
 	for (let i = 0; i < branches.length; i++) {
 		const branchType = i === 0 ? 'main' : 'sub';
+		const branchCode = branches[i].code;
+
+		const { data: existingBranch, error: fetchError } = await supabase
+			.from('branch')
+			.select('*')
+			.eq('company_id', companyId)
+			.eq('code', branchCode)
+			.single();
+
+		if (fetchError && fetchError.code !== 'PGRST116') {
+			console.error('Error fetching branch:', fetchError);
+			throw fetchError;
+		}
+
 		const branchData = {
 			company_id: companyId,
-			code: branches[i].code,
+			code: branchCode,
 			description: branches[i].description,
 			branch_type: branchType,
 		};
 
-		const { error } = await supabase.from('branch').insert([branchData]);
-		if (error) {
-			console.error('Error inserting branch:', error);
-			return null; // Handle the error case by returning null or appropriate error response
+		if (existingBranch) {
+			console.log(`Updating existing branch with code: ${branchCode}`);
+			const { error: updateError } = await supabase.from('branch').update(branchData).eq('id', existingBranch.id);
+
+			if (updateError) {
+				console.error('Error updating branch:', updateError);
+				throw updateError;
+			}
+		} else {
+			console.log('Inserting new branch:', branchCode);
+			const { error: insertError } = await supabase.from('branch').insert([branchData]);
+
+			if (insertError) {
+				console.error('Error inserting branch:', insertError);
+				throw insertError;
+			}
 		}
 	}
 }
@@ -161,8 +189,7 @@ export default async function addCompleteBusinessData(c: Context, businesses: Bu
 			const businessID = await insertOrUpdateBusiness(c, business);
 			await insertOrUpdateCapital(c, businessID, business.capital);
 			await insertOrUpdateAddress(c, businessID, business.address);
-
-			//await insertBranch(c, companyId, business.branches);
+			await insertOrUpdateBranch(c, businessID, business.branches);
 			//await insertManager(c, companyId, business.management);
 		} catch (error) {
 			console.error('Error processing business:', error);

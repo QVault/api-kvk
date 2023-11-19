@@ -1,3 +1,5 @@
+import { BusinessAddress, CapitalInfo, Business, BusinessManager } from './models/newTypes';
+
 export function mapBusinessData(business: Business) {
 	return {
 		dossier_code: business.dossier.code,
@@ -13,7 +15,7 @@ export function mapBusinessData(business: Business) {
 	};
 }
 
-export function mapAddressData(companyId: number, address: BusinessAddress) {
+export function mapAddressData(address: BusinessAddress, companyId: number) {
 	return {
 		company_id: companyId,
 		street_name: address.streetName,
@@ -41,7 +43,7 @@ export function mapCapitalData(capital: CapitalInfo, companyId: number) {
 	};
 }
 
-export function mapBranchData(companyId: number, branch: { code: string; description: string; branchType: string }) {
+export function mapBranchData(branch: { code: string; description: string; branchType: string }, companyId: number) {
 	return {
 		company_id: companyId,
 		code: branch.code,
