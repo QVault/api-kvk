@@ -72,16 +72,30 @@ async function insertOrUpdateCapital(c: Context, companyId: number, capital: Cap
 	}
 }
 
-async function insertAddress(c: Context, companyId: number, address: BusinessAddress) {
+async function insertOrUpdateAddress(c: Context, companyId: number, address: BusinessAddress) {
 	const supabase = initSupabaseClient(c);
-	const dbObject = mapAddressData(companyId, address);
-	const { data, error } = await supabase.from('address').insert([dbObject]);
+	const { data: existingData, error: fetchError } = await supabase.from('address').select('*').eq('company_id', companyId).single();
 
-	if (error) {
-		console.error('Error inserting business address:', error);
-		return null;
+	if (fetchError && fetchError.code !== 'PGRST116') {
+		console.error('Error fetching existing address data:', fetchError);
+		throw fetchError;
 	}
-	return data;
+
+	if (existingData) {
+		console.log(`Existing address data for companyId "${existingData.company_id}" found`);
+		const updateResult = await updateAndLogChanges(supabase, 'address', existingData, address, mapAddressData);
+		return { data: updateResult };
+	} else {
+		console.log('No existing address data, inserting new record.');
+		const dbObject = mapAddressData(companyId, address);
+		const { data, error } = await supabase.from('address').insert([dbObject]).single();
+
+		if (error) {
+			console.error('Error inserting business address:', error);
+			throw new Error('Error inserting business address');
+		}
+		return { data };
+	}
 }
 
 async function insertBranch(c: Context, companyId: number, branches: Array<{ code: string; description: string }>) {
@@ -146,8 +160,7 @@ export default async function addCompleteBusinessData(c: Context, businesses: Bu
 		try {
 			const businessID = await insertOrUpdateBusiness(c, business);
 			await insertOrUpdateCapital(c, businessID, business.capital);
-
-			//await insertAddress(c, companyId, business.address);
+			await insertOrUpdateAddress(c, businessID, business.address);
 
 			//await insertBranch(c, companyId, business.branches);
 			//await insertManager(c, companyId, business.management);
