@@ -21,7 +21,6 @@ app.get('/kvk/', async (c) => {
 });
 
 app.post('/kvk/', async (c) => {
-	// Extract parameters from the request body
 	const params = await c.req.query();
 
 	const searchTerm = params.searchTerm || '';
@@ -30,19 +29,24 @@ app.post('/kvk/', async (c) => {
 	const skip = parseInt(params.skip || '0', 10);
 	const take = parseInt(params.take || '5', 10);
 
-	// Fetch and transform the data using your function
 	const mergedResults = await fetchAndTransformBusinessData(searchTerm, includeActief, includeInactief, skip, take);
 
-	// Store the data in Cloudflare KV
-	await c.env.KVK_Aruba.put('kvk_aruba_data', JSON.stringify(mergedResults));
+	for (const result of mergedResults) {
+		const key = `${result.dossier.code}.${result.dossier.branchNumber}`;
+		await c.env.KVK_REGISTRY.put(key, JSON.stringify(result));
+	}
 
-	// Respond back
-	return c.json({ message: 'Data stored successfully in Cloudflare KV' });
+	return c.json({ message: 'Each registry stored separately in Cloudflare KV' });
 });
 
-app.post('/addBusinessData', async (c) => {
+app.post('/addBusinessData/:key', async (c) => {
 	try {
-		const getRouteResponse = await c.env.KVK_Aruba.get('kvk_aruba_data');
+		const key = c.req.param('key');
+
+		const getRouteResponse = await c.env.KVK_REGISTRY.get(key);
+		if (!getRouteResponse) {
+			throw new Error(`No data found for key: ${key}`);
+		}
 		const businessData = JSON.parse(getRouteResponse);
 		console.log(`Before insertOrUpdateCapital, companyId: ${businessData.id}`);
 

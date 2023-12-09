@@ -199,7 +199,10 @@ async function upsertManager(c: Context, companyId: number, managers: BusinessMa
 	}
 }
 
-export default async function addCompleteBusinessData(c: Context, businesses: Business[]) {
+export default async function addCompleteBusinessData(c: Context, businesses: Business | Business[]) {
+	// Ensure businesses is always an array
+	businesses = Array.isArray(businesses) ? businesses : [businesses];
+
 	for (const business of businesses) {
 		try {
 			const businessID = await upsertBusiness(c, business);
