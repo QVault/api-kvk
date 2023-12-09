@@ -8,11 +8,12 @@ export interface Business {
 	name: string;
 	alternateName?: string; // previously "handelsnaam"
 	branches: BranchInfo[];
+	businessType?: string;
 	legalForm: string; // previously "rechtsvorm"
 	isActive: boolean; // previously "isActief"
 	address: BusinessAddress;
 	management: BusinessManager[]; // previously "bestuur"
-	capital: CapitalInfo;
+	capital?: CapitalInfo;
 	objective?: string; // "doelstellingNL"
 	status: string;
 	productsAvailable: boolean;
@@ -59,16 +60,16 @@ export interface BusinessManager {
 	dossierNumber?: string | null;
 	title: string | null;
 	role: string;
-	birthCountry: string;
-	birthPlace: string;
+	birthCountry: string | null;
+	birthPlace: string | null;
 	startDate: Date;
 	authority: string;
 }
 
 export interface CapitalInfo {
-	invested: number;
-	currencyId: number; // "kapitaalValutaId"
-	currency: string; // "kapitaalValuta"
+	invested?: number;
+	currencyId?: number; // "kapitaalValutaId"
+	currency?: string; // "kapitaalValuta"
 	startYearCapital?: number | null;
 	endYearCapital?: number | null;
 	totalCapital?: number | null; // possible combined or calculated field from the available capital fields

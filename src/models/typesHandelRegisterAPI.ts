@@ -2,40 +2,56 @@ import { VestigingAdres } from './typesBedrijfRegisterAPI';
 
 export interface HandelRegisterResponse {
 	dossiernummerString: string;
-	type: string;
-	nummer: number;
-	filiaalNummer: number;
 	bedrijfsnaam: string;
 	handelsnaam: string;
-	hoofdbranch: string;
-	rechtsvorm: string;
-	bestuur: Array<Bestuurder>;
+	email: string | null;
+	telefoonnummer: string | null;
+	fax: string | null;
+	type: string;
+	registratienummer: number;
+	filiaalnummer: number;
 	vestigingAdres: VestigingAdres;
-	kapitaalGestort: number;
-	kapitaalMaatschappelijk: number;
-	kapitaalGeplaatst: number;
-	kapitaalValutaId: number;
-	kapitaalValuta: string;
-	kapitaalBeginBoekjaar?: number | null;
-	kapitaalEindBoekjaar?: number | null;
-	statutaireZetel: string;
-	datumVestiging: Date;
-	datumIngangStatus: Date;
-	doelstellingNL: string;
-	datumStatutenWijziging?: Date | null;
-	status: string;
 	productenBeschikbaar: boolean;
+	bedrijfDetailsBasis: BedrijfDetailsBasis;
+	bedrijfDetailsUitgebreid: BedrijfDetailsUitgebreid;
 	id: number;
-	subbranches: Array<string>;
 }
 
-export interface Bestuurder {
+export interface BedrijfDetailsBasis {
+	rechtsvorm: string;
+	statutaireZetel: string | null;
+	grootKlein: string;
+	status: string;
+	datumVestiging: string | null;
+	datumIngangStatus: string;
+	datumStatutenWijziging: string | null;
+}
+
+export interface BedrijfDetailsUitgebreid {
+	financien: Capital | null;
+	bestuur: Bestuurslid[];
+	doelstellingNL: string;
+	doelstellingEN: string;
+	hoofdbranch: string;
+	subbranches: string[];
+}
+
+export interface Bestuurslid {
 	naam: string;
-	dossiernummer?: number | null;
-	titel?: string | null;
+	dossiernummer: string | null;
+	titel: string | null;
 	functie: string;
 	geboorteland: string;
 	geboorteplaats: string;
-	ingangsDatum: Date;
+	nationaliteit: string;
+	ingangsDatum: string;
 	bevoegdheid: string;
+}
+
+export interface Capital {
+	invested: number;
+	currencyId: number;
+	currency: string;
+	startYearCapital: number | null;
+	endYearCapital: number | null;
 }

@@ -42,7 +42,7 @@ export function mapCapitalData(capital: CapitalInfo, companyId: number) {
 		end_year_capital: capital.endYearCapital,
 	};
 }
-
+// NOTE NOT USED, IS INLINE.
 export function mapBranchData(branch: { code: string; description: string; branchType: string }, companyId: number) {
 	return {
 		company_id: companyId,

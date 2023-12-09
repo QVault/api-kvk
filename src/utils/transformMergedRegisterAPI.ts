@@ -4,18 +4,23 @@ import { Business, BusinessManager, BusinessAddress, BranchInfo } from '../model
 
 function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntry: HandelRegisterResponse): Business {
 	const code = bedrijfRegisterEntry.dossiernummerString.split('.')[0];
-	const [branchCode, branchDescription] = handelRegisterEntry.hoofdbranch.split(' - ');
 
-	const transformedManagers: BusinessManager[] = handelRegisterEntry.bestuur.map((manager) => ({
-		name: manager.naam,
-		dossierNumber: manager.dossiernummer || null,
-		title: manager.titel || null,
-		role: manager.functie,
-		birthCountry: manager.geboorteland,
-		birthPlace: manager.geboorteplaats,
-		startDate: manager.ingangsDatum,
-		authority: manager.bevoegdheid,
-	}));
+	const transformedManagers: BusinessManager[] = [];
+
+	if (handelRegisterEntry.bedrijfDetailsUitgebreid && Array.isArray(handelRegisterEntry.bedrijfDetailsUitgebreid.bestuur)) {
+		transformedManagers.push(
+			...handelRegisterEntry.bedrijfDetailsUitgebreid.bestuur.map((manager) => ({
+				name: manager.naam,
+				dossierNumber: manager.dossiernummer || null,
+				title: manager.titel || null,
+				role: manager.functie,
+				birthCountry: manager.geboorteland,
+				birthPlace: manager.geboorteplaats,
+				startDate: new Date(manager.ingangsDatum),
+				authority: manager.bevoegdheid,
+			}))
+		);
+	}
 
 	const transformedAddress: BusinessAddress = {
 		streetName: bedrijfRegisterEntry.vestigingAdres.straatnaam ?? null,
@@ -32,13 +37,59 @@ function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntr
 		// postalCode: bedrijfRegisterEntry.vestigingAdres.postcode ?? null,
 	};
 
-	const branches: BranchInfo[] = [
-		{ code: branchCode, description: branchDescription },
-		...handelRegisterEntry.subbranches.map((subBranchEntry) => {
-			const [subBranchCode, subBranchDescription] = subBranchEntry.split(' - ');
-			return { code: subBranchCode, description: subBranchDescription };
-		}),
-	];
+	const branches: BranchInfo[] = [];
+
+	if (handelRegisterEntry.bedrijfDetailsUitgebreid) {
+		const bedrijfDetails = handelRegisterEntry.bedrijfDetailsUitgebreid;
+
+		console.log('Hoofdbranch:', bedrijfDetails.hoofdbranch);
+		console.log('Subbranches:', bedrijfDetails.subbranches);
+
+		if (bedrijfDetails.hoofdbranch) {
+			const [branchCode, branchDescription] = bedrijfDetails.hoofdbranch.split(' - ');
+			branches.push({ code: branchCode, description: branchDescription });
+		}
+
+		if (bedrijfDetails.subbranches && Array.isArray(bedrijfDetails.subbranches)) {
+			bedrijfDetails.subbranches.forEach((subBranchEntry) => {
+				if (subBranchEntry) {
+					const [subBranchCode, subBranchDescription] = subBranchEntry.split(' - ');
+					branches.push({ code: subBranchCode, description: subBranchDescription });
+				}
+			});
+		}
+	}
+
+	let transformObjective = [];
+
+	if (handelRegisterEntry.bedrijfDetailsUitgebreid) {
+		transformObjective = [
+			handelRegisterEntry.bedrijfDetailsUitgebreid.doelstellingNL,
+			handelRegisterEntry.bedrijfDetailsUitgebreid.doelstellingEN,
+		]
+			.filter(Boolean)
+			.join(' ');
+	}
+
+	let grootKlein;
+
+	if (handelRegisterEntry.bedrijfDetailsBasis) {
+		grootKlein = handelRegisterEntry.bedrijfDetailsBasis.grootKlein;
+	}
+
+	const capital = {
+		invested: handelRegisterEntry.bedrijfDetailsUitgebreid?.financien?.invested ?? null,
+		currencyId: handelRegisterEntry.bedrijfDetailsUitgebreid?.financien?.currencyId ?? null,
+		currency: handelRegisterEntry.bedrijfDetailsUitgebreid?.financien?.currency ?? null,
+		startYearCapital: handelRegisterEntry.bedrijfDetailsUitgebreid?.financien?.startYearCapital ?? null,
+		endYearCapital: handelRegisterEntry.bedrijfDetailsUitgebreid?.financien?.endYearCapital ?? null,
+	};
+
+	let status = '';
+
+	if (handelRegisterEntry.bedrijfDetailsBasis) {
+		status = handelRegisterEntry.bedrijfDetailsBasis.status || '';
+	}
 
 	return {
 		dossier: {
@@ -50,19 +101,14 @@ function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntr
 		name: bedrijfRegisterEntry.bedrijfsnaam,
 		alternateName: bedrijfRegisterEntry.handelsnaam,
 		branches: branches,
+		businessType: grootKlein,
 		legalForm: bedrijfRegisterEntry.rechtsvorm,
 		isActive: bedrijfRegisterEntry.isActief,
 		address: transformedAddress,
 		management: transformedManagers,
-		capital: {
-			invested: handelRegisterEntry.kapitaalGestort,
-			currencyId: handelRegisterEntry.kapitaalValutaId,
-			currency: handelRegisterEntry.kapitaalValuta,
-			startYearCapital: handelRegisterEntry.kapitaalBeginBoekjaar,
-			endYearCapital: handelRegisterEntry.kapitaalEindBoekjaar,
-		},
-		objective: handelRegisterEntry.doelstellingNL,
-		status: handelRegisterEntry.status,
+		capital: capital,
+		objective: transformObjective,
+		status: status,
 		productsAvailable: handelRegisterEntry.productenBeschikbaar,
 		id: handelRegisterEntry.id,
 	};
