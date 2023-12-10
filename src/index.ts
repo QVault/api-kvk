@@ -31,12 +31,16 @@ app.post('/kvk/', async (c) => {
 
 	const mergedResults = await fetchAndTransformBusinessData(searchTerm, includeActief, includeInactief, skip, take);
 
+	// variable 2 store the keys
+	const keys = [];
+
 	for (const result of mergedResults) {
 		const key = `${result.dossier.code}.${result.dossier.branchNumber}`;
+		keys.push(key);
 		await c.env.KVK_REGISTRY.put(key, JSON.stringify(result));
 	}
 
-	return c.json({ message: 'Each registry stored separately in Cloudflare KV' });
+	return c.json({ message: keys });
 });
 
 app.post('/addBusinessData/:key', async (c) => {

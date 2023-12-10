@@ -71,12 +71,6 @@ function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntr
 			.join(' ');
 	}
 
-	let grootKlein;
-
-	if (handelRegisterEntry.bedrijfDetailsBasis) {
-		grootKlein = handelRegisterEntry.bedrijfDetailsBasis.grootKlein;
-	}
-
 	const capital = {
 		invested: handelRegisterEntry.bedrijfDetailsUitgebreid?.financien?.invested ?? null,
 		currencyId: handelRegisterEntry.bedrijfDetailsUitgebreid?.financien?.currencyId ?? null,
@@ -86,9 +80,17 @@ function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntr
 	};
 
 	let status = '';
+	let grootKlein;
+	let datumVestiging;
+	let datumIngangStatus;
+	let datumStatutenWijziging;
 
 	if (handelRegisterEntry.bedrijfDetailsBasis) {
 		status = handelRegisterEntry.bedrijfDetailsBasis.status || '';
+		grootKlein = handelRegisterEntry.bedrijfDetailsBasis.grootKlein;
+		datumVestiging = handelRegisterEntry.bedrijfDetailsBasis.datumVestiging || null;
+		datumIngangStatus = handelRegisterEntry.bedrijfDetailsBasis.datumIngangStatus || null;
+		datumStatutenWijziging = handelRegisterEntry.bedrijfDetailsBasis.datumStatutenWijziging || null;
 	}
 
 	return {
@@ -102,6 +104,9 @@ function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntr
 		alternateName: bedrijfRegisterEntry.handelsnaam,
 		branches: branches,
 		businessType: grootKlein,
+		dateOfEstablishment: datumVestiging ? new Date(datumVestiging) : null,
+		dateOfStatus: datumIngangStatus ? new Date(datumIngangStatus) : null,
+		dateOfStatuteChange: datumStatutenWijziging ? new Date(datumStatutenWijziging) : null,
 		legalForm: bedrijfRegisterEntry.rechtsvorm,
 		isActive: bedrijfRegisterEntry.isActief,
 		address: transformedAddress,
