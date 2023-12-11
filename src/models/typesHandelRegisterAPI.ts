@@ -49,9 +49,9 @@ export interface Bestuurslid {
 }
 
 export interface Capital {
-	invested: number;
-	currencyId: number;
-	currency: string;
-	startYearCapital: number | null;
-	endYearCapital: number | null;
+	kapitaalGestort: number | null;
+	kapitaalValutaId: number | null;
+	kapitaalValuta: string | null;
+	kapitaalBeginBoekjaar: number | null;
+	kapitaalEindBoekjaar: number | null;
 }

@@ -68,11 +68,11 @@ function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntr
 	}
 
 	const capital = {
-		invested: handelRegisterEntry.bedrijfDetailsUitgebreid?.financien?.invested ?? null,
-		currencyId: handelRegisterEntry.bedrijfDetailsUitgebreid?.financien?.currencyId ?? null,
-		currency: handelRegisterEntry.bedrijfDetailsUitgebreid?.financien?.currency ?? null,
-		startYearCapital: handelRegisterEntry.bedrijfDetailsUitgebreid?.financien?.startYearCapital ?? null,
-		endYearCapital: handelRegisterEntry.bedrijfDetailsUitgebreid?.financien?.endYearCapital ?? null,
+		invested: handelRegisterEntry.bedrijfDetailsUitgebreid?.financien?.kapitaalGestort ?? null,
+		currencyId: handelRegisterEntry.bedrijfDetailsUitgebreid?.financien?.kapitaalValutaId ?? null,
+		currency: handelRegisterEntry.bedrijfDetailsUitgebreid?.financien?.kapitaalValuta ?? null,
+		startYearCapital: handelRegisterEntry.bedrijfDetailsUitgebreid?.financien?.kapitaalBeginBoekjaar ?? null,
+		endYearCapital: handelRegisterEntry.bedrijfDetailsUitgebreid?.financien?.kapitaalEindBoekjaar ?? null,
 	};
 
 	let status = '';
