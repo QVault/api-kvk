@@ -9,9 +9,9 @@ export interface Business {
 	alternateName?: string; // previously "handelsnaam"
 	branches: BranchInfo[];
 	businessType?: string;
-	dateOfEstablishment?: Date; // previously "datumVestiging"
-	dateOfStatus?: Date; // previously "datumIngangStatus"
-	dateOfStatuteChange?: Date; // previously "datumStatutenWijziging"
+	dateOfEstablishment?: String | null; // previously "datumVestiging"
+	dateOfStatus?: String | null; // previously "datumIngangStatus"
+	dateOfStatuteChange?: String | null; // previously "datumStatutenWijziging"
 	legalForm: string; // previously "rechtsvorm"
 	isActive: boolean; // previously "isActief"
 	address: BusinessAddress;

@@ -5,3 +5,4 @@ wrangler.toml
 s
 src/api/supabase/old
 src/api/supabase/sda.json
+src/api/supabase/bulkInsertDB.ts

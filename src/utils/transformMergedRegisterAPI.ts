@@ -60,15 +60,11 @@ function transformBusinessData(bedrijfRegisterEntry: Dossier, handelRegisterEntr
 		}
 	}
 
-	let transformObjective = [];
+	let transformObjective = '';
 
 	if (handelRegisterEntry.bedrijfDetailsUitgebreid) {
-		transformObjective = [
-			handelRegisterEntry.bedrijfDetailsUitgebreid.doelstellingNL,
-			handelRegisterEntry.bedrijfDetailsUitgebreid.doelstellingEN,
-		]
-			.filter(Boolean)
-			.join(' ');
+		const { doelstellingNL, doelstellingEN } = handelRegisterEntry.bedrijfDetailsUitgebreid;
+		transformObjective = [doelstellingNL, doelstellingEN].filter((item) => item !== null).join(', ');
 	}
 
 	const capital = {

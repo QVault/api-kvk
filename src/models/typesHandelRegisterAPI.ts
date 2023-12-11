@@ -30,8 +30,8 @@ export interface BedrijfDetailsBasis {
 export interface BedrijfDetailsUitgebreid {
 	financien: Capital | null;
 	bestuur: Bestuurslid[];
-	doelstellingNL: string;
-	doelstellingEN: string;
+	doelstellingNL: string | null;
+	doelstellingEN: string | null;
 	hoofdbranch: string;
 	subbranches: string[];
 }
