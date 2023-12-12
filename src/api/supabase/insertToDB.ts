@@ -58,29 +58,12 @@ async function upsertCapital(c: Context, companyId: number, capital: CapitalInfo
 
 async function upsertAddress(c: Context, companyId: number, address: BusinessAddress) {
 	const supabase = initSupabaseClient(c);
-	const { data: existingData, error: fetchError } = await supabase.from('address').select('*').eq('company_id', companyId).single();
 
-	if (fetchError && fetchError.code !== 'PGRST116') {
-		console.error('Error fetching address information:', fetchError);
-		throw fetchError;
-	}
+	const { error } = await supabase.from('address').upsert(mapAddressData(address, companyId), { onConflict: 'company_id' }).select('id');
 
-	if (!existingData) {
-		const { data, error } = await supabase.from('address').insert([mapAddressData(address, companyId)]);
-
-		if (error) {
-			console.error('Error inserting business address:', error);
-			throw error;
-		}
-		return data;
-	} else {
-		const { data, error } = await supabase.from('address').update(mapAddressData(address, companyId)).eq('id', existingData.id);
-
-		if (error) {
-			console.error('Error updating business address:', error);
-			throw error;
-		}
-		return data;
+	if (error) {
+		console.error('Error in upserting business address:', error);
+		throw error;
 	}
 }
 
