@@ -181,18 +181,24 @@ async function upsertManager(c: Context, companyId: number, managers: BusinessMa
 }
 
 export default async function addCompleteBusinessData(c: Context, businesses: Business | Business[]) {
-	// Ensure businesses is always an array
 	businesses = Array.isArray(businesses) ? businesses : [businesses];
 
 	for (const business of businesses) {
-		try {
-			const businessID = await upsertBusiness(c, business);
-			await upsertCapital(c, businessID, business.capital);
-			await upsertAddress(c, businessID, business.address);
-			await upsertBranch(c, businessID, business.branches);
-			await upsertManager(c, businessID, business.management);
-		} catch (error) {
-			console.error('Error processing business:', error);
+		const businessID = await upsertBusiness(c, business);
+
+		const upsertTasks = [
+			upsertCapital(c, businessID, business.capital),
+			upsertAddress(c, businessID, business.address),
+			upsertBranch(c, businessID, business.branches),
+			upsertManager(c, businessID, business.management),
+		];
+
+		const results = await Promise.allSettled(upsertTasks);
+
+		for (const result of results) {
+			if (result.status === 'rejected') {
+				console.error('Error in an upsert operation:', result.reason);
+			}
 		}
 	}
 }

@@ -42,8 +42,8 @@ export function mapCapitalData(capital: CapitalInfo, companyId: number) {
 		invested: capital.invested,
 		currency_id: capital.currencyId,
 		currency: capital.currency,
-		start_year_capital: capital.startYearCapital,
-		end_year_capital: capital.endYearCapital,
+		//start_year_capital: capital.startYearCapital,
+		//end_year_capital: capital.endYearCapital,
 	};
 }
 // NOTE NOT USED, IS INLINE.
