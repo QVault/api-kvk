@@ -15,7 +15,7 @@ app.get('/kvk/', async (c) => {
 	const skip = parseInt(params.skip || '0', 10);
 	const take = parseInt(params.take || '5', 10);
 
-	const mergedResults = await fetchAndTransformBusinessData(searchTerm, includeActief, includeInactief, skip, take);
+	const mergedResults = await fetchAndTransformBusinessData(c, searchTerm, includeActief, includeInactief, skip, take);
 
 	return c.json(mergedResults);
 });
@@ -29,7 +29,8 @@ app.post('/kvk/', async (c) => {
 	const skip = parseInt(params.skip || '0', 10);
 	const take = parseInt(params.take || '5', 10);
 
-	const mergedResults = await fetchAndTransformBusinessData(searchTerm, includeActief, includeInactief, skip, take);
+	//const mergedResults = await fetchAndTransformBusinessData(searchTerm, includeActief, includeInactief, skip, take);
+	const mergedResults = await fetchAndTransformBusinessData(c, searchTerm, includeActief, includeInactief, skip, take);
 
 	// variable 2 store the keys
 	const keys = [];
