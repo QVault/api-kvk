@@ -123,7 +123,7 @@ async function upsertManager(c: Context, companyId: number, managers: BusinessMa
 
 		if (existingManagerNames.has(manager.name)) {
 			// Update existing manager
-			const { error } = await supabase.from('management').update(managerData).eq('name', manager.name);
+			const { error } = await supabase.from('management').update(managerData).eq('name', manager.name).eq('company_id', companyId);
 
 			if (error) {
 				console.error('Error updating management member:', error);
