@@ -70,44 +70,19 @@ async function upsertAddress(c: Context, companyId: number, address: BusinessAdd
 async function upsertBranch(c: Context, companyId: number, branches: Array<{ code: string; description: string }>) {
 	const supabase = initSupabaseClient(c);
 
-	for (let i = 0; i < branches.length; i++) {
-		const branchType = i === 0 ? 'main' : 'sub';
-		const branchData = {
-			company_id: companyId,
-			code: branches[i].code,
-			description: branches[i].description,
-			branch_type: branchType,
-		};
+	const branchData = branches.map((branch, index) => ({
+		conflict_id: `${companyId}_${branch.code}`,
+		company_id: companyId,
+		code: branch.code,
+		description: branch.description,
+		branch_type: index === 0 ? 'main' : 'sub',
+	}));
 
-		// Check if the branch data already exists
-		const { data: existingData, error: fetchError } = await supabase
-			.from('branch')
-			.select('*')
-			.eq('company_id', companyId)
-			.eq('code', branchData.code)
-			.single();
+	const { error } = await supabase.from('branch').upsert(branchData, { onConflict: 'conflict_id' });
 
-		if (fetchError && fetchError.code !== 'PGRST116') {
-			console.error('Error fetching branch information:', fetchError);
-			throw fetchError;
-		}
-
-		if (!existingData) {
-			// If the data does not exist, insert it
-			const { error } = await supabase.from('branch').insert([branchData]);
-
-			if (error) {
-				console.error('Error inserting branch:', error);
-				return null; // Handle the error case appropriately
-			}
-		} else {
-			const { error } = await supabase.from('branch').update(branchData).eq('company_id', companyId).eq('code', branches[i].code); // Use 'company_id' and 'code' to target the correct record
-
-			if (error) {
-				console.error('Error updating branch:', error);
-				return null; // Handle the error case appropriately
-			}
-		}
+	if (error) {
+		console.error('Error in upserting branches:', error);
+		throw error;
 	}
 }
 
