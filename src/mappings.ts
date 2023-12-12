@@ -3,7 +3,7 @@ import { BusinessAddress, CapitalInfo, Business, BusinessManager } from './model
 export function mapBusinessData(business: Business) {
 	return {
 		dossier_code: business.dossier.code,
-		registration_number: business.dossier.registrationNumber,
+		registration_number: business.dossier.branchNumber,
 		name: business.name,
 		alternate_name: business.alternateName,
 		business_type: business.businessType,

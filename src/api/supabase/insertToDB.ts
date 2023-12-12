@@ -13,41 +13,22 @@ async function upsertBusiness(c: Context, business: Business) {
 		throw new Error('Invalid external_id');
 	}
 
-	// Check if the data already exists
-	const { data: existingData, error: fetchError } = await supabase.from('company').select('*').eq('external_id', uniqueId).single();
-	if (fetchError && fetchError.code !== 'PGRST116') {
-		console.error('Error fetching business:', fetchError);
-		throw fetchError;
+	// Upsert operation: insert if new, update if exists
+	const { data, error } = await supabase.from('company').upsert(mapBusinessData(business), { onConflict: 'external_id' }).select('id');
+
+	if (error) {
+		console.error('Error in upserting business:', error);
+		throw error;
 	}
 
-	// If the data does not exist, insert it
-	if (!existingData) {
-		const { data, error } = await supabase
-			.from('company')
-			.insert([mapBusinessData(business)])
-			.select('id');
-
-		if (error) {
-			console.error('Error inserting business:', error);
-			throw error;
-		}
-		return data ? data[0].id : null; // Assuming the inserted record ID is needed
-	} else {
-		// If data already exists, just return its ID
-		return existingData.id;
-	}
+	return data ? data[0].id : null;
 }
 
 async function upsertCapital(c: Context, companyId: number, capital: CapitalInfo) {
 	const supabase = initSupabaseClient(c);
 
 	// Check if capital data already exists
-	const { data: existingData, error: fetchError } = await supabase
-		.from('capital')
-		.select('*')
-		.eq('company_id', companyId) // Assuming 'companyId' is the field to match
-		// Add other conditions as needed to identify unique capital records
-		.single();
+	const { data: existingData, error: fetchError } = await supabase.from('capital').select('*').eq('company_id', companyId).single();
 
 	if (fetchError && fetchError.code !== 'PGRST116') {
 		console.error('Error fetching capital information:', fetchError);
@@ -65,7 +46,7 @@ async function upsertCapital(c: Context, companyId: number, capital: CapitalInfo
 		return data;
 	} else {
 		// If data already exists, update it
-		const { data, error } = await supabase.from('capital').update(mapCapitalData(capital, companyId)).eq('id', existingData.id); // Assuming 'id' is the unique identifier
+		const { data, error } = await supabase.from('capital').update(mapCapitalData(capital, companyId)).eq('id', existingData.id);
 
 		if (error) {
 			console.error('Error updating capital information:', error);

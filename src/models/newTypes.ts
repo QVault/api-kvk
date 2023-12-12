@@ -73,7 +73,7 @@ export interface CapitalInfo {
 	invested?: number;
 	currencyId?: number; // "kapitaalValutaId"
 	currency?: string; // "kapitaalValuta"
-	startYearCapital?: number | null;
-	endYearCapital?: number | null;
-	totalCapital?: number | null; // possible combined or calculated field from the available capital fields
+	startYearCapital?: string | null;
+	endYearCapital?: string | null;
+	totalCapital?: string | null; // possible combined or calculated field from the available capital fields
 }
