@@ -56,15 +56,9 @@ export function mapBranchData(branch: { code: string; description: string; branc
 	};
 }
 
-export function mapManagerData(
-	manager: BusinessManager,
-	companyId: number,
-	holdingCompanyIdRef: number | string | null,
-	holdingCompanyDossierCode: string | null
-) {
+export function mapManagerData(manager: BusinessManager, companyId: number) {
 	return {
-		holding_company_id_ref: holdingCompanyIdRef,
-		holding_company_dossier_code: holdingCompanyDossierCode,
+		holding_company_dossier_code: manager.dossierNumber,
 		company_id: companyId,
 		name: manager.name,
 		role: manager.role,

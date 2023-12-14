@@ -32,7 +32,7 @@ async function fetchDetailsForBusinesses(env: Context, searchResults: Dossier[])
 			const detailResponse = await fetch(detailUrl);
 			const jsonResponse = await detailResponse.json();
 
-			await saveResponseToR2(env, dossierCode, JSON.stringify(jsonResponse));
+			// await saveResponseToR2(env, dossierCode, JSON.stringify(jsonResponse));
 			return jsonResponse as HandelRegisterResponse;
 		})
 	);

@@ -87,39 +87,17 @@ async function upsertBranch(c: Context, companyId: number, branches: Array<{ cod
 }
 
 async function upsertManager(c: Context, companyId: number, managers: BusinessManager | BusinessManager[]) {
-	// Helper function to find company IDs by dossier numbers
-	async function findCompanyIdsByDossierCodes(supabase, dossierCodes) {
-		const { data, error } = await supabase.from('company').select('id, dossier_code').in('dossier_code', dossierCodes);
-
-		if (error) {
-			console.error('Error finding company IDs by dossier codes:', error);
-			return {};
-		}
-
-		return data.reduce((acc, company) => {
-			acc[company.dossier_code] = company.id;
-			return acc;
-		}, {});
-	}
-
 	const supabase = initSupabaseClient(c);
 	managers = Array.isArray(managers) ? managers : [managers];
-
-	// Collect all unique dossier numbers
-	const dossierCodes = managers.filter((manager) => manager.dossierNumber).map((manager) => manager.dossierNumber);
-	const uniqueDossierCodes = [...new Set(dossierCodes)];
-	const companyIdByDossierCode = await findCompanyIdsByDossierCodes(supabase, uniqueDossierCodes);
 
 	// Pre-fetch all relevant manager entries in a single query
 	const managerNames = managers.map((manager) => manager.name);
 	const { data: existingManagers } = await supabase.from('management').select('name').in('name', managerNames);
 	const existingManagerNames = new Set(existingManagers.map((manager) => manager.name));
+	console.log('managers', Array.from(existingManagerNames));
 
 	for (const manager of managers) {
-		let holdingCompanyIdRef = manager.dossierNumber ? companyIdByDossierCode[manager.dossierNumber] : null;
-		let holdingCompanyDossierCode = manager.dossierNumber && !holdingCompanyIdRef ? manager.dossierNumber : null;
-
-		const managerData = mapManagerData(manager, companyId, holdingCompanyIdRef, holdingCompanyDossierCode);
+		const managerData = mapManagerData(manager, companyId);
 
 		if (existingManagerNames.has(manager.name)) {
 			// Update existing manager
