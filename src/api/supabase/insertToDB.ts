@@ -90,29 +90,18 @@ async function upsertManager(c: Context, companyId: number, managers: BusinessMa
 	const supabase = initSupabaseClient(c);
 	managers = Array.isArray(managers) ? managers : [managers];
 
-	// Pre-fetch all relevant manager entries in a single query
-	const managerNames = managers.map((manager) => manager.name);
-	const { data: existingManagers } = await supabase.from('management').select('name').in('name', managerNames);
-	const existingManagerNames = new Set(existingManagers.map((manager) => manager.name));
-	console.log('managers', Array.from(existingManagerNames));
-
 	for (const manager of managers) {
 		const managerData = mapManagerData(manager, companyId);
 
-		if (existingManagerNames.has(manager.name)) {
-			// Update existing manager
-			const { error } = await supabase.from('management').update(managerData).eq('name', manager.name).eq('company_id', companyId);
+		// Use a combination of the manager name and the company ID as the unique identifier
 
-			if (error) {
-				console.error('Error updating management member:', error);
-			}
-		} else {
-			// Insert new manager
-			const { error } = await supabase.from('management').insert([managerData]);
+		// Update existing manager or insert new manager
+		const { data, error } = await supabase.from('management').upsert(managerData, { onConflict: 'unique_identifier' });
 
-			if (error) {
-				console.error('Error inserting management member:', error);
-			}
+		console.log(data);
+
+		if (error) {
+			console.error('Error upserting management member:', error);
 		}
 	}
 }

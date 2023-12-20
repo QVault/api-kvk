@@ -67,5 +67,6 @@ export function mapManagerData(manager: BusinessManager, companyId: number) {
 		start_date: manager.startDate,
 		authority: manager.authority,
 		title: manager.title,
+		unique_identifier: `${manager.name}-${companyId}`,
 	};
 }
